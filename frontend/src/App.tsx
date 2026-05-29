@@ -1,122 +1,68 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
 import './App.css'
+import { useSSE } from "./useSSE";
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App() {
+  const { state, start } = useSSE();
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col items-center justify-center p-8 gap-6">
+      <h1 className="text-xl font-mono font-bold tracking-wider">SSE Tracker</h1>
 
-      <div className="ticks"></div>
+      {/* status pill */}
+      <span
+        className={`text-xs px-3 py-1 rounded-full font-mono ${
+          state.connected
+            ? "bg-green-900 text-green-300"
+            : state.error
+            ? "bg-red-900 text-red-300"
+            : state.done
+            ? "bg-blue-900 text-blue-300"
+            : "bg-zinc-800 text-zinc-400"
+        }`}
+      >
+        {state.connected
+          ? "● connected"
+          : state.error
+          ? "✕ error"
+          : state.done
+          ? "✓ done"
+          : "○ idle"}
+      </span>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+      {/* start button */}
+      <button
+        onClick={start}
+        disabled={state.connected}
+        className="px-6 py-2 bg-zinc-100 text-zinc-900 font-mono text-sm rounded disabled:opacity-40 hover:bg-white transition-colors"
+      >
+        Run operation
+      </button>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      {/* progress bar */}
+      <div className="w-full max-w-md bg-zinc-800 rounded-full h-2">
+        <div
+          className="bg-green-500 h-2 rounded-full transition-all duration-500"
+          style={{ width: `${state.progress}%` }}
+        />
+      </div>
+      <span className="text-xs text-zinc-500 font-mono">{state.progress}%</span>
+
+      {/* event log */}
+      {state.log.length > 0 && (
+        <div className="w-full max-w-md bg-zinc-900 border border-zinc-800 rounded p-4 font-mono text-sm space-y-1 max-h-64 overflow-y-auto">
+          {state.log.map((entry, i) => (
+            <div key={i} className="flex gap-3">
+              <span className="text-zinc-600 shrink-0">{entry.ts}</span>
+              <span className="text-zinc-300">{entry.message}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* error */}
+      {state.error && (
+        <p className="text-red-400 font-mono text-sm">{state.error}</p>
+      )}
+    </div>
+  );
 }
-
-export default App
