@@ -29,12 +29,9 @@ export function useSSE() {
     error: null,
   });
 
-  const reset = () =>
-    setState({ connected: false, progress: 0, log: [], done: false, error: null });
-
   const start = useCallback(async () => {
     esRef.current?.close();
-    reset();
+    setState({ connected: false, progress: 0, log: [], done: false, error: null });
 
     // 1. POST to get an ID
     const res = await fetch("http://localhost:3001/api/start", { method: "POST" });
